@@ -1,38 +1,31 @@
-cmake_minimum_required(VERSION 3.22.1)
-project("mcpe_client")
+cmake_minimum_required(VERSION 3.10)
+project(client)
 
 set(CMAKE_CXX_STANDARD 17)
 
-# Include directories
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/gui
-    ${CMAKE_CURRENT_SOURCE_DIR}/modules
-    ${CMAKE_CURRENT_SOURCE_DIR}/imgui
-    ${CMAKE_CURRENT_SOURCE_DIR}/dobby/include
+# Khai báo các tệp mã nguồn của ImGui
+set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui)
+file(GLOB IMGUI_SOURCES
+    "${IMGUI_DIR}/imgui.cpp"
+    "${IMGUI_DIR}/imgui_draw.cpp"
+    "${IMGUI_DIR}/imgui_tables.cpp"
+    "${IMGUI_DIR}/imgui_widgets.cpp"
 )
 
-# Source files
-file(GLOB_RECURSE SOURCES
+# Khai báo các tệp mã nguồn Client của bạn
+file(GLOB CLIENT_SOURCES
     "main.cpp"
     "gui/*.cpp"
     "modules/*.cpp"
-    "imgui/*.cpp"
-    "imgui/backends/imgui_impl_android.cpp"
-    "imgui/backends/imgui_impl_opengl3.cpp"
 )
 
-add_library(client SHARED ${SOURCES})
+add_library(client SHARED ${CLIENT_SOURCES} ${IMGUI_SOURCES})
 
-# System Libraries for Android & OpenGL ES
+# Trỏ đường dẫn để menu.cpp có thể tìm thấy imgui.h
+target_include_directories(client PRIVATE ${IMGUI_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
+
 find_library(log-lib log)
-find_library(android-lib android)
-find_library(egl-lib EGL)
-find_library(gles3-lib GLESv3)
+find_library(GLESv3-lib GLESv3)
+find_library(EGL-lib EGL)
 
-target_link_libraries(client
-    ${log-lib}
-    ${android-lib}
-    ${egl-lib}
-    ${gles3-lib}
-)
+target_link_libraries(client ${log-lib} ${GLESv3-lib} ${EGL-lib})

@@ -1,44 +1,24 @@
-name: Build MCPE Client Native Library
+name: Build MCPE Client
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
+    - uses: actions/checkout@v4
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-
-    - name: Setup Android NDK
-      uses: ndk-samples/setup-ndk-action@v1
-      with:
-        ndk-version: r25c
-
-    - name: Build C++ Native Library with CMake
+    - name: Build with CMake
       run: |
-        mkdir -p app/src/main/cpp/build
-        cd app/src/main/cpp/build
-        cmake -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake \
-              -DANDROID_ABI=arm64-v8a \
-              -DANDROID_PLATFORM=android-24 \
-              -DCMAKE_BUILD_TYPE=Release ..
-        make -j$(nproc)
+        mkdir build
+        cd build
+        cmake -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_LATEST_HOME/build/cmake/android.toolchain.cmake -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-21 ..
+        make
 
-    - name: Upload Built Library
+    - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: libclient-arm64
-        path: app/src/main/cpp/build/*.so
+        path: build/libclient.so
